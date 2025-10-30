@@ -129,7 +129,6 @@ async function refreshCompanies() {
     companiesTable.appendChild(tr);
   });
 
-  // update select pro AI
   const postCompany = document.getElementById("postCompany");
   if (postCompany) {
     postCompany.innerHTML = companiesCache
@@ -186,8 +185,6 @@ async function refreshClients() {
 /* ------------------------------
    🔹 IMPORT / EXPORT – XLSX
 ------------------------------ */
-
-// 📤 Export firem
 function exportCompanies() {
   if (!companiesCache.length) return alert("Žádné firmy k exportu.");
   const wb = XLSX.utils.book_new();
@@ -196,7 +193,6 @@ function exportCompanies() {
   XLSX.writeFile(wb, "firmy.xlsx");
 }
 
-// 📥 Import firem
 async function handleImportCompanies(e) {
   const file = e.target.files[0];
   if (!file) return;
@@ -220,7 +216,6 @@ async function handleImportCompanies(e) {
   reader.readAsArrayBuffer(file);
 }
 
-// 📤 Export klientů
 function exportClients() {
   if (!clientsCache.length) return alert("Žádní klienti k exportu.");
   const wb = XLSX.utils.book_new();
@@ -229,7 +224,6 @@ function exportClients() {
   XLSX.writeFile(wb, "klienti.xlsx");
 }
 
-// 📥 Import klientů
 async function handleImportClients(e) {
   const file = e.target.files[0];
   if (!file) return;
@@ -254,7 +248,7 @@ async function handleImportClients(e) {
 }
 
 /* ------------------------------
-   🔹 AI E-maily – s odkazy a podpisem
+   🔹 AI E-maily – profesionální
 ------------------------------ */
 async function generateAi() {
   const key = localStorage.getItem("openai_key");
@@ -263,44 +257,37 @@ async function generateAi() {
   const postCompany = document.getElementById("postCompany").value;
   const postTitle = document.getElementById("postTitle").value;
   const postContent = document.getElementById("postContent").value;
-
   if (!postCompany || !postContent) return alert("Vyplň společnost i text.");
 
   const company = companiesCache.find((c) => c.id === postCompany);
 
-const systemPrompt = `Jsi asistent, který vytváří profesionální e-maily pro skupinu klientů investujících ve vybraných společnostech.
+  const systemPrompt = `Jsi asistent, který vytváří profesionální e-maily pro skupinu klientů investujících ve vybraných společnostech.
 Piš výhradně česky, s důrazem na formální tón a profesionalitu.
 
 DŮLEŽITÁ PRAVIDLA:
-1️⃣ Vždy oslovuj ve 2. osobě množného čísla — používej VY, VÁM, VAŠE, apod.
-2️⃣ Nikdy nepoužívej 1. osobu ("já", "my", "náš") – mluv neutrálně nebo popisně, např. „Společnost oznámila…“, „Byla zveřejněna informace…“.
-3️⃣ Piš profesionálně, srozumitelně a věcně, bez přehnaných emocí či reklamních frází.
-4️⃣ Nikdy si NEVYMÝŠLEJ žádné údaje, čísla, jména, důvody ani spekulace. Používej pouze informace, které jsou uvedeny v poskytnutém textu.
-5️⃣ Pokud některá data chybí, prostě je neuváděj.
-6️⃣ E-mail musí být napsán pro více adresátů – tedy formát ve množném čísle („Vážení klienti,“ apod.).
-7️⃣ Text musí být maximálně 5–7 vět, srozumitelný a strukturovaný.
-8️⃣ Na konci e-mailu musí být přesně jeden podpis (bez variant, bez opakování):
+1️⃣ Vždy oslovuj ve 2. osobě množného čísla – používej VY, VÁM, VAŠE, apod.
+2️⃣ Nikdy nepoužívej 1. osobu ("já", "my", "náš") – mluv neutrálně, např. „Společnost oznámila…“.
+3️⃣ Piš stručně, věcně, srozumitelně a profesionálně.
+4️⃣ Nepřidávej žádné vymyšlené údaje, fakta, jména, ani spekulace. Používej výhradně informace z poskytnutého textu.
+5️⃣ Pokud některá data chybí, jednoduše je neuváděj.
+6️⃣ Text je určen více lidem (klientům) – používej formu ve množném čísle („Vážení klienti, informujeme Vás…“).
+7️⃣ Na konci e-mailu musí být přesně jeden podpis:
 
 S pozdravem,
 Martin Bílek
 
-📄 Výstup vrať pouze jako:
+📄 Výstup:
 1) Předmět: <krátký formální předmět do 50 znaků>
 2) E-mail:
-<Oslovení ve 2. osobě množného čísla>
-<Text e-mailu podle výše uvedených pravidel>
+<Oslovení a text e-mailu podle pravidel>
 S pozdravem,
 Martin Bílek`;
-
 
   const userPrompt = `Nadpis: ${postTitle}\nText:\n${postContent}`;
 
   const res = await fetch("https://api.openai.com/v1/chat/completions", {
     method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: "Bearer " + key,
-    },
+    headers: { "Content-Type": "application/json", Authorization: "Bearer " + key },
     body: JSON.stringify({
       model: "gpt-4o-mini",
       temperature: 0.2,
@@ -314,7 +301,6 @@ Martin Bílek`;
   const data = await res.json();
   const text = data.choices?.[0]?.message?.content || "";
 
-  // odstranění vícenásobných podpisů
   let cleanText = text.replace(/(S\\s*pozdravem[\\s\\S]*)/gi, "").trim();
   cleanText += "\n\nS pozdravem,\nMartin Bílek";
 
@@ -323,7 +309,6 @@ Martin Bílek`;
   aiBody.value = cleanText;
   aiGroup.value = `Klienti investující v ${company?.name || "neznámé firmě"}`;
 
-  // automatické doplnění odkazů na sítě
   const links = [];
   if (company?.li) links.push(`<a href="${company.li}" target="_blank">LinkedIn</a>`);
   if (company?.fb) links.push(`<a href="${company.fb}" target="_blank">Facebook</a>`);
