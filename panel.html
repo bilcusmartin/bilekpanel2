@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Panel – Martin Bílek</title>
   <link rel="stylesheet" href="style.css" />
+  <!-- XLSX pro import/export -->
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 </head>
 <body>
@@ -20,25 +21,20 @@
     </div>
   </nav>
 
-  <div id="loadingMessage" class="container loading">Načítám panel…</div>
+  <div id="loadingMessage" class="container loading">Načítám panel...</div>
 
   <main class="container" id="appRoot" style="display:none;">
     <!-- Dashboard -->
     <section id="viewDashboard" class="view">
       <h1>Dashboard</h1>
+      <div class="row" style="margin-bottom:10px">
+        <button id="runScanNowBtn" class="btn-ghost">🔁 Zkontrolovat novinky nyní</button>
+        <span class="muted small">Automatický sken běží také 1× denně na serveru.</span>
+      </div>
       <div class="grid">
-        <div class="card stat">
-          <div class="stat-label">Počet firem</div>
-          <div class="stat-value" id="statCompanies">–</div>
-        </div>
-        <div class="card stat">
-          <div class="stat-label">Počet klientů</div>
-          <div class="stat-value" id="statClients">–</div>
-        </div>
-        <div class="card stat">
-          <div class="stat-label">Neodeslané příspěvky</div>
-          <div class="stat-value" id="statPostsPending">–</div>
-        </div>
+        <div class="card stat"><div class="stat-label">Počet firem</div><div class="stat-value" id="statCompanies">–</div></div>
+        <div class="card stat"><div class="stat-label">Počet klientů</div><div class="stat-value" id="statClients">–</div></div>
+        <div class="card stat"><div class="stat-label">Neodeslané příspěvky</div><div class="stat-value" id="statPostsPending">–</div></div>
       </div>
     </section>
 
@@ -50,13 +46,13 @@
         <div class="form-grid">
           <div><label>Název</label><input id="coName" placeholder="Conseq" /></div>
           <div><label>Facebook</label><input id="coFb" placeholder="https://facebook.com/..." /></div>
-          <div><label>LinkedIn</label><input id="coLi" placeholder="https://linkedin.com/..." /></div>
+          <div><label>LinkedIn</label><input id="coLi" placeholder="https://linkedin.com/company/..."/></div>
           <div><label>Web</label><input id="coWeb" placeholder="https://..." /></div>
         </div>
         <div class="row" style="margin-top:12px;">
           <button id="addCompanyBtn" class="btn-primary">Přidat firmu</button>
           <div class="spacer"></div>
-          <input type="file" id="importCompaniesInput" accept=".xlsx,.xls,.csv" style="display:none;">
+          <input type="file" id="importCompaniesInput" accept=".xlsx,.xls,.csv" style="display:none">
           <button id="importCompaniesBtn" class="btn-ghost small">📥 Import z Excelu</button>
           <button id="exportCompaniesBtn" class="btn-ghost small">📤 Export do Excelu</button>
         </div>
@@ -65,7 +61,7 @@
       <div class="card">
         <h3>Seznam firem</h3>
         <table class="table" id="companiesTable">
-          <thead><tr><th>Název</th><th>Facebook</th><th>LinkedIn</th><th>Web</th><th></th></tr></thead>
+          <thead><tr><th>Název</th><th>Facebook</th><th>LinkedIn</th><th>Web</th></tr></thead>
           <tbody></tbody>
         </table>
       </div>
@@ -82,12 +78,10 @@
           <div><label>Telefon</label><input id="clPhone" /></div>
           <div style="grid-column:1/-1"><label>Poznámka</label><textarea id="clNote"></textarea></div>
         </div>
-
         <div class="row" style="margin-top:10px;">
           <button id="addClientBtn" class="btn-primary">Přidat klienta</button>
-          <button id="cancelEditClientBtn" class="btn-ghost" style="display:none">Zrušit úpravu</button>
           <div class="spacer"></div>
-          <input type="file" id="importClientsInput" accept=".xlsx,.xls,.csv" style="display:none;">
+          <input type="file" id="importClientsInput" accept=".xlsx,.xls,.csv" style="display:none">
           <button id="importClientsBtn" class="btn-ghost small">📥 Import z Excelu</button>
           <button id="exportClientsBtn" class="btn-ghost small">📤 Export do Excelu</button>
         </div>
@@ -96,7 +90,7 @@
       <div class="card">
         <h3>Seznam klientů</h3>
         <table class="table" id="clientsTable">
-          <thead><tr><th>Jméno</th><th>E-mail</th><th>Telefon</th><th>Poznámka</th><th></th></tr></thead>
+          <thead><tr><th>Jméno</th><th>E-mail</th><th>Telefon</th><th>Poznámka</th></tr></thead>
           <tbody></tbody>
         </table>
       </div>
@@ -109,10 +103,9 @@
         <h3>Nový příspěvek</h3>
         <div class="form-grid">
           <div><label>Společnost</label><select id="postCompany"></select></div>
-          <div><label>Nadpis</label><input id="postTitle" /></div>
-          <div style="grid-column:1/-1"><label>Text</label><textarea id="postContent" rows="6"></textarea></div>
+          <div><label>Nadpis</label><input id="postTitle" placeholder="Titulek" /></div>
+          <div style="grid-column:1/-1"><label>Text</label><textarea id="postContent" rows="6" placeholder="Sem vložte text příspěvku (nebo ho vygeneruje server při skenu)..."></textarea></div>
         </div>
-
         <div class="row" style="margin-top:10px;">
           <button id="genAiBtn" class="btn-ghost">🤖 Vytvořit shrnutí (AI)</button>
           <div class="spacer"></div>
@@ -127,8 +120,7 @@
           <label>Text e-mailu (AI)</label>
           <textarea id="aiBody" rows="8"></textarea>
 
-          <!-- Nová sekce: sociální sítě firmy -->
-          <div id="aiSocials" style="margin-top:12px;font-size:0.9rem;color:#333;">
+          <div id="aiSocials" style="margin-top:12px;">
             <strong>🌐 Odkazy firmy:</strong>
             <ul id="aiLinksList" style="margin:6px 0 0 12px;"></ul>
           </div>
@@ -138,7 +130,7 @@
       <div class="card">
         <h3>Neodeslané příspěvky</h3>
         <table class="table" id="postsTable">
-          <thead><tr><th>Společnost</th><th>Titulek</th><th>Datum</th><th>Stav</th><th></th></tr></thead>
+          <thead><tr><th>Společnost</th><th>Titulek</th><th>Datum</th><th>Stav</th></tr></thead>
           <tbody></tbody>
         </table>
       </div>
@@ -147,18 +139,4 @@
     <!-- Nastavení -->
     <section id="viewSettings" class="view" style="display:none;">
       <h1>Nastavení</h1>
-      <div class="card">
-        <h3>OpenAI</h3>
-        <p>Vlož svůj OpenAI API klíč:</p>
-        <input id="openaiKeyInput" placeholder="sk-..." />
-        <div class="row" style="margin-top:8px;">
-          <button id="saveOpenAiBtn" class="btn-primary">Uložit</button>
-          <button id="clearOpenAiBtn" class="btn-ghost">Smazat</button>
-        </div>
-      </div>
-    </section>
-  </main>
-
-  <script type="module" src="app.js"></script>
-</body>
-</html>
+      <
