@@ -9,7 +9,7 @@
 <body class="auth-body">
   <div class="auth-card">
     <h2 style="margin:0 0 8px;color:var(--primary)">Přihlášení do panelu</h2>
-    <p class="muted small">Použij e-mail a heslo. Pokud nemáš účet, zaregistruj se níže.</p>
+    <p class="muted small">Použijte e-mail a heslo. Pokud účet nemáte, zaregistrujte se.</p>
 
     <label>Email</label>
     <input id="loginEmail" placeholder="jan@firma.cz" type="email" />
@@ -36,10 +36,6 @@
         <button id="btnRegister" class="btn-primary">Vytvořit účet</button>
         <button id="btnCancelRegister" class="btn-ghost">Zpět</button>
       </div>
-    </div>
-
-    <div style="margin-top:14px;font-size:12px;color:var(--muted)">
-      <strong>Bezpečnost:</strong> OpenAI klíč a Firestore config neukládejte do veřejného repozitáře.
     </div>
   </div>
 
@@ -74,39 +70,17 @@
     btnLogin.onclick = async () => {
       const email = loginEmail.value.trim();
       const pass = loginPassword.value.trim();
-      if (!email || !pass) return alert('Vyplň email i heslo.');
-      try {
-        await signInWithEmailAndPassword(auth, email, pass);
-        window.location.href = 'panel.html';
-      } catch (e) {
-        alert('Přihlášení selhalo: ' + (e.message || e));
-      }
+      if (!email || !pass) return alert('Vyplňte e-mail i heslo.');
+      try { await signInWithEmailAndPassword(auth, email, pass); window.location.href = 'panel.html'; }
+      catch(e){ alert('Přihlášení selhalo: ' + (e.message||e)); }
     };
-
-    btnShowRegister.onclick = () => {
-      registerBox.style.display = 'block';
-      btnShowRegister.style.display = 'none';
-    };
-
-    btnCancelRegister.onclick = () => {
-      registerBox.style.display = 'none';
-      btnShowRegister.style.display = 'inline-block';
-    };
-
+    btnShowRegister.onclick = () => { registerBox.style.display='block'; btnShowRegister.style.display='none'; };
+    btnCancelRegister.onclick = () => { registerBox.style.display='none'; btnShowRegister.style.display='inline-block'; };
     btnRegister.onclick = async () => {
-      const name = regName.value.trim();
-      const email = regEmail.value.trim();
-      const pass = regPassword.value.trim();
-      if (!name || !email || !pass) return alert('Vyplň jméno, email a heslo.');
-      try {
-        const userCred = await createUserWithEmailAndPassword(auth, email, pass);
-        if (name) await updateProfile(userCred.user, { displayName: name });
-        alert('Registrace úspěšná. Nyní se přihlaste.');
-        registerBox.style.display = 'none';
-        btnShowRegister.style.display = 'inline-block';
-      } catch (e) {
-        alert('Registrace selhala: ' + (e.message || e));
-      }
+      const name = regName.value.trim(), email = regEmail.value.trim(), pass = regPassword.value.trim();
+      if (!name || !email || !pass) return alert('Vyplňte jméno, e-mail a heslo.');
+      try { const {user} = await createUserWithEmailAndPassword(auth,email,pass); await updateProfile(user,{displayName:name}); alert('Registrace úspěšná. Přihlaste se.'); registerBox.style.display='none'; btnShowRegister.style.display='inline-block'; }
+      catch(e){ alert('Registrace selhala: ' + (e.message||e)); }
     };
   </script>
 </body>
