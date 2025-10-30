@@ -1,0 +1,113 @@
+<!doctype html>
+<html lang="cs">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Panel – Přihlášení</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body class="auth-body">
+  <div class="auth-card">
+    <h2 style="margin:0 0 8px;color:var(--primary)">Přihlášení do panelu</h2>
+    <p class="muted small">Použij e-mail a heslo. Pokud nemáš účet, zaregistruj se níže.</p>
+
+    <label>Email</label>
+    <input id="loginEmail" placeholder="jan@firma.cz" type="email" />
+
+    <label>Heslo</label>
+    <input id="loginPassword" placeholder="Heslo" type="password" />
+
+    <div style="display:flex;gap:8px;margin-top:12px">
+      <button id="btnLogin" class="btn-primary">Přihlásit</button>
+      <button id="btnShowRegister" class="btn-ghost">Registrovat</button>
+    </div>
+
+    <hr style="margin:18px 0;border:none;border-top:1px solid var(--border)" />
+
+    <div id="registerBox" style="display:none;">
+      <h3 style="margin:0 0 8px;color:var(--primary)">Registrace</h3>
+      <label>Jméno</label>
+      <input id="regName" placeholder="Jan Novák" />
+      <label>Email</label>
+      <input id="regEmail" type="email" placeholder="jan@firma.cz" />
+      <label>Heslo</label>
+      <input id="regPassword" type="password" placeholder="Min. 6 znaků" />
+      <div style="display:flex;gap:8px;margin-top:12px">
+        <button id="btnRegister" class="btn-primary">Vytvořit účet</button>
+        <button id="btnCancelRegister" class="btn-ghost">Zpět</button>
+      </div>
+    </div>
+
+    <div style="margin-top:14px;font-size:12px;color:var(--muted)">
+      <strong>Bezpečnost:</strong> OpenAI klíč a Firestore config neukládejte do veřejného repozitáře.
+    </div>
+  </div>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-app.js";
+    import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, updateProfile } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-auth.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyCTH7L5eSmpIsMJTyyOFVotsWPuWX2dGCk",
+      authDomain: "martin-panel.firebaseapp.com",
+      projectId: "martin-panel",
+      storageBucket: "martin-panel.firebasestorage.app",
+      messagingSenderId: "372334501493",
+      appId: "1:372334501493:web:b6f3cf370b00b9feed623c",
+      measurementId: "G-KQR1E0DP04"
+    };
+
+    initializeApp(firebaseConfig);
+    const auth = getAuth();
+
+    const loginEmail = document.getElementById('loginEmail');
+    const loginPassword = document.getElementById('loginPassword');
+    const btnLogin = document.getElementById('btnLogin');
+    const btnShowRegister = document.getElementById('btnShowRegister');
+    const registerBox = document.getElementById('registerBox');
+    const regName = document.getElementById('regName');
+    const regEmail = document.getElementById('regEmail');
+    const regPassword = document.getElementById('regPassword');
+    const btnRegister = document.getElementById('btnRegister');
+    const btnCancelRegister = document.getElementById('btnCancelRegister');
+
+    btnLogin.onclick = async () => {
+      const email = loginEmail.value.trim();
+      const pass = loginPassword.value.trim();
+      if (!email || !pass) return alert('Vyplň email i heslo.');
+      try {
+        await signInWithEmailAndPassword(auth, email, pass);
+        window.location.href = 'panel.html';
+      } catch (e) {
+        alert('Přihlášení selhalo: ' + (e.message || e));
+      }
+    };
+
+    btnShowRegister.onclick = () => {
+      registerBox.style.display = 'block';
+      btnShowRegister.style.display = 'none';
+    };
+
+    btnCancelRegister.onclick = () => {
+      registerBox.style.display = 'none';
+      btnShowRegister.style.display = 'inline-block';
+    };
+
+    btnRegister.onclick = async () => {
+      const name = regName.value.trim();
+      const email = regEmail.value.trim();
+      const pass = regPassword.value.trim();
+      if (!name || !email || !pass) return alert('Vyplň jméno, email a heslo.');
+      try {
+        const userCred = await createUserWithEmailAndPassword(auth, email, pass);
+        if (name) await updateProfile(userCred.user, { displayName: name });
+        alert('Registrace úspěšná. Nyní se přihlaste.');
+        registerBox.style.display = 'none';
+        btnShowRegister.style.display = 'inline-block';
+      } catch (e) {
+        alert('Registrace selhala: ' + (e.message || e));
+      }
+    };
+  </script>
+</body>
+</html>
